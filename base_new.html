@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ECS Security Assessment{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            🔒 ECS Security Assessment Console
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/keypair" class="nav-link">Keypair</a>
+            <a href="/servers" class="nav-link">Servers</a>
+            <a href="/assessment" class="nav-link">Assessment</a>
+            <a href="/config" class="nav-link">Config</a>
+            <a href="/report" class="nav-link">Reports</a>
+            <a href="/audit-log" class="nav-link">📋 Audit Log</a>
+            <a href="/login" class="nav-link nav-logout" onclick="return confirmLogout()">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>ECS VM Security Hardening Assessment Console v1.1 | Read-only assessment — no server modifications</p>
+    </footer>
+
+    <script src="/static/js/app.js?v=5"></script>
+    <script>
+        async function confirmLogout() {
+            if (!confirm('Are you sure you want to log out?')) return false;
+            try {
+                await fetch('/logout', { method: 'POST' });
+            } catch (e) {}
+            window.location.href = '/login';
+            return false;
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

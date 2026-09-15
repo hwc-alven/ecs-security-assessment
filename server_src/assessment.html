@@ -1,0 +1,578 @@
+<!-- AI生成 -->
+
+{% extends "base.html" %}
+
+{% block title %}Assessment — ECS Security Assessment{% endblock %}
+
+{% block content %}
+
+<h1>🔍 Security Assessment</h1>
+
+
+
+{% if not llm_configured %}
+
+<div class="warn-box">
+
+    <p>⚠️ Please <a href="/config">configure LLM</a> first before running assessments.</p>
+
+</div>
+
+{% endif %}
+
+
+
+<div class="card">
+
+    <h3>Create Assessment Task</h3>
+
+    <form id="assessment-form" class="form-grid">
+
+        <div class="form-group">
+
+            <label>Task Name *</label>
+
+            <input type="text" id="task-name" placeholder="e.g., Production VM CIS Assessment" required>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Benchmarks *</label>
+
+            <div class="checkbox-dropdown" id="benchmark-dropdown">
+
+                <div class="checkbox-dropdown-header" onclick="toggleBenchmarkDropdown()">
+
+                    <span id="benchmark-dropdown-label">Select benchmarks...</span>
+
+                    <span class="checkbox-dropdown-arrow">▼</span>
+
+                </div>
+
+                <div class="checkbox-dropdown-list" id="benchmark-dropdown-list">
+
+                    <label class="checkbox-dropdown-item">
+
+                        <input type="checkbox" name="benchmark-select" value="CIS">
+
+                        <span>CIS Benchmark</span>
+
+                    </label>
+
+                    <label class="checkbox-dropdown-item">
+
+                        <input type="checkbox" name="benchmark-select" value="STIG">
+
+                        <span>STIG Benchmark</span>
+
+                    </label>
+
+                    <label class="checkbox-dropdown-item">
+
+                        <input type="checkbox" name="benchmark-select" value="NIST">
+
+                        <span>NIST SP 800-171</span>
+
+                    </label>
+
+                    <label class="checkbox-dropdown-item">
+
+                        <input type="checkbox" name="benchmark-select" value="PCI">
+
+                        <span>PCI-DSS v4.0</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="form-group full-width">
+
+            <label>Select Servers *</label>
+
+            {% if servers %}
+
+            <div class="server-checkboxes">
+
+                {% for server in servers %}
+
+                <label class="checkbox-label">
+
+                    <input type="checkbox" name="server-ids" value="{{ server.id }}">
+
+                    {{ server.ip }} ({{ server.ssh_username }})
+
+                </label>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <p>No servers configured. <a href="/servers">Add servers first</a>.</p>
+
+            {% endif %}
+
+        </div>
+
+        <div class="form-group form-actions">
+
+            <button type="submit" class="btn btn-primary" id="run-assessment-btn">🚀 Run Assessment</button>
+
+            <button type="button" class="btn btn-danger" id="stop-assessment-btn" style="display:none;">⏹️ Stop Assessment</button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+
+<!-- Real-time Live Terminal Card -->
+
+<div class="card terminal-card" id="terminal-card" style="display:none; background:#121212; color:#eee; border:1px solid #333;">
+
+    <div class="terminal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:8px; margin-bottom:10px;">
+
+        <span style="font-weight:bold; color:#00e676; font-size:1.05em;">💻 Live Execution Terminal</span>
+
+        <span id="terminal-progress-badge" class="badge" style="background:#1e88e5; color:white; font-family:monospace; font-size:0.9em; padding:4px 10px; border-radius:10px;">0%</span>
+
+    </div>
+
+    <div class="progress-bar-bg" style="background:#263238; height:8px; border-radius:4px; margin-bottom:12px; overflow:hidden;">
+
+        <div id="terminal-progress-fill" style="background:#00e676; height:100%; width:0%; transition:width 0.4s ease;"></div>
+
+    </div>
+
+    <pre id="terminal-output" style="background:#000000; color:#00ff66; padding:14px; border-radius:6px; font-family:'Consolas', 'Courier New', monospace; font-size:0.86em; line-height:1.5; max-height:320px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; border:1px solid #263238; margin:0;"></pre>
+
+</div>
+
+
+
+<div class="card">
+
+
+
+    <h3>Custom Checklist Upload</h3>
+
+    <p>Upload your own security checklist (.xlsx or .csv). The LLM will analyze it and provide optimization suggestions.</p>
+
+    <form id="checklist-form" enctype="multipart/form-data">
+
+        <input type="file" name="file" accept=".xlsx,.csv" required>
+
+        <button type="submit" class="btn">📤 Upload Checklist</button>
+
+    </form>
+
+    {% if custom_checklists %}
+
+    <div class="uploaded-checklists">
+
+        <h4>Uploaded Checklists</h4>
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr><th>ID</th><th>Filename</th><th>Items</th><th>Actions</th></tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for cl in custom_checklists %}
+
+                <tr>
+
+                    <td>{{ cl.id }}</td>
+
+                    <td>{{ cl.filename }}</td>
+
+                    <td>{{ cl.item_count }}</td>
+
+                    <td><button onclick="analyzeChecklist('{{ cl.id }}')" class="btn btn-sm">🤖 Analyze</button></td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<div class="card">
+
+    <h3>Task History</h3>
+
+    {% if tasks %}
+
+    <table class="data-table">
+
+        <thead>
+
+            <tr><th>ID</th><th>Name</th><th>Benchmark</th><th>Servers</th><th>Status</th><th>Terminal</th><th>Report</th></tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for task in tasks %}
+
+            <tr>
+
+                <td>{{ task.id }}</td>
+
+                <td>{{ task.name }}</td>
+
+                <td>{{ task.benchmark }}</td>
+
+                <td>{{ task.server_count }}</td>
+
+                <td><span class="status-badge status-{{ task.status }}">{{ task.status }}</span></td>
+
+                <td><button onclick="reopenTerminal('{{ task.id }}')" class="btn btn-sm">💻 Live Terminal</button></td>
+
+                <td>
+
+                    {% if task.report %}
+
+                    <a href="/api/report/{{ task.id }}/html" target="_blank" class="btn btn-sm">📄 View</a>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <p>No assessment tasks yet.</p>
+
+    {% endif %}
+
+</div>
+
+
+
+<div id="result-area"></div>
+
+
+
+<script>
+
+// Benchmark checkbox dropdown
+
+function toggleBenchmarkDropdown() {
+
+    const list = document.getElementById('benchmark-dropdown-list');
+
+    list.style.display = list.style.display === 'block' ? 'none' : 'block';
+
+}
+
+
+
+document.getElementById('benchmark-dropdown-list')?.addEventListener('change', function() {
+
+    const checked = this.querySelectorAll('input[type="checkbox"]:checked');
+
+    const label = document.getElementById('benchmark-dropdown-label');
+
+    if (checked.length === 0) {
+
+        label.textContent = 'Select benchmarks...';
+
+    } else if (checked.length === 1) {
+
+        label.textContent = checked[0].parentElement.querySelector('span').textContent;
+
+    } else {
+
+        label.textContent = checked.length + ' benchmarks selected';
+
+    }
+
+});
+
+
+
+// Close dropdown when clicking outside
+
+document.addEventListener('click', function(e) {
+
+    const dropdown = document.getElementById('benchmark-dropdown');
+
+    const list = document.getElementById('benchmark-dropdown-list');
+
+    if (dropdown && list && !dropdown.contains(e.target)) {
+
+        list.style.display = 'none';
+
+    }
+});
+
+
+
+// Reopen live terminal for a task from task history
+
+async function reopenTerminal(taskId) {
+
+    const terminalCard = document.getElementById('terminal-card');
+
+    const terminalOut = document.getElementById('terminal-output');
+
+    const fill = document.getElementById('terminal-progress-fill');
+
+    const badge = document.getElementById('terminal-progress-badge');
+
+    const stopBtn = document.getElementById('stop-assessment-btn');
+
+    const runBtn = document.getElementById('run-assessment-btn');
+
+
+
+    if (!terminalCard || !terminalOut) {
+
+        showResult('Terminal elements not found.', 'error');
+
+        return;
+
+    }
+
+
+
+    _stopPolling();
+
+
+
+    terminalCard.style.display = 'block';
+
+    terminalOut.textContent = 'Retrieving live terminal session...\n';
+
+    if (fill) fill.style.width = '0%';
+
+    if (badge) { badge.textContent = '...'; badge.style.background = '#1e88e5'; }
+
+
+
+    try {
+
+        const resp = await fetch('/api/assessment/status/' + taskId);
+
+        if (!resp.ok) {
+
+            terminalOut.textContent = 'Task not found. The session may have been lost after a server restart.';
+
+            if (badge) { badge.textContent = 'N/A'; badge.style.background = '#c62828'; }
+
+            return;
+
+        }
+
+        const data = await resp.json();
+
+
+
+        terminalOut.textContent = '';
+
+        if (data.logs && data.logs.length > 0) {
+
+            data.logs.forEach(function(l) { terminalOut.textContent += l + '\n'; });
+
+        } else {
+
+            terminalOut.textContent = '(No logs available for this task)\n';
+
+        }
+
+        terminalOut.scrollTop = terminalOut.scrollHeight;
+
+
+
+        var pct = data.progress || 0;
+
+        if (fill) fill.style.width = pct + '%';
+
+        if (badge) badge.textContent = pct + '%';
+
+
+
+        var status = data.status || 'unknown';
+
+
+
+        if (status === 'running') {
+
+            _currentTaskId = taskId;
+
+            if (runBtn) { runBtn.disabled = true; runBtn.innerHTML = '<span class="spinner"></span> Assessment running...'; }
+
+            if (stopBtn) { stopBtn.style.display = 'inline-block'; stopBtn.disabled = false; stopBtn.innerHTML = 'Stop Assessment'; }
+
+            if (badge) badge.style.background = '#1e88e5';
+
+            terminalCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+
+
+            var processedLogsCount = data.logs ? data.logs.length : 0;
+
+            var interval = setInterval(async function() {
+
+                try {
+
+                    var r = await fetch('/api/assessment/status/' + taskId);
+
+                    var d = await r.json();
+
+                    if (d.logs && d.logs.length > processedLogsCount) {
+
+                        var newLogs = d.logs.slice(processedLogsCount);
+
+                        newLogs.forEach(function(l) { terminalOut.textContent += l + '\n'; });
+
+                        processedLogsCount = d.logs.length;
+
+                        terminalOut.scrollTop = terminalOut.scrollHeight;
+
+                    }
+
+                    var p = d.progress || 0;
+
+                    if (fill) fill.style.width = p + '%';
+
+                    if (badge) badge.textContent = p + '%';
+
+
+
+                    if (d.status === 'completed') {
+
+                        _stopPolling();
+
+                        _currentTaskId = null;
+
+                        if (runBtn) { runBtn.disabled = false; runBtn.innerHTML = 'Run Assessment'; }
+
+                        if (stopBtn) stopBtn.style.display = 'none';
+
+                        if (fill) fill.style.width = '100%';
+
+                        if (badge) { badge.textContent = '100%'; badge.style.background = '#2e7d32'; }
+
+                        var s = d.summary || {};
+
+                        showResult('Assessment completed! Controls: ' + (s.total_controls||0) + ' | Compliant: ' + (s.compliant||0) + ' | Non-compliant: ' + (s.non_compliant||0) + ' | Unknown: ' + (s.unknown||0) + ' | Rate: ' + (s.compliance_rate||'0%') + ' <a href="/api/report/' + taskId + '/html" target="_blank" class="btn btn-primary" style="margin-top:10px;">View Report</a>', 'success');
+
+                    } else if (d.status === 'cancelled') {
+
+                        _stopPolling();
+
+                        _currentTaskId = null;
+
+                        if (runBtn) { runBtn.disabled = false; runBtn.innerHTML = 'Run Assessment'; }
+
+                        if (stopBtn) stopBtn.style.display = 'none';
+
+                        if (badge) { badge.style.background = '#ef6c00'; badge.textContent = 'CANCELLED'; }
+
+                    } else if (d.status === 'failed') {
+
+                        _stopPolling();
+
+                        _currentTaskId = null;
+
+                        if (runBtn) { runBtn.disabled = false; runBtn.innerHTML = 'Run Assessment'; }
+
+                        if (stopBtn) stopBtn.style.display = 'none';
+
+                        if (badge) { badge.style.background = '#c62828'; badge.textContent = 'FAILED'; }
+
+                    }
+
+                } catch (e) {
+
+                    console.error('Reopen polling error:', e);
+
+                }
+
+            }, 800);
+            _currentPollInterval = interval;
+
+
+
+        } else if (status === 'completed') {
+
+            if (badge) { badge.textContent = '100%'; badge.style.background = '#2e7d32'; }
+
+            if (fill) fill.style.width = '100%';
+
+            var s = data.summary || {};
+
+            terminalOut.textContent += '\nTask completed! Compliance Rate: ' + (s.compliance_rate || 'N/A') + '\n';
+
+            terminalOut.scrollTop = terminalOut.scrollHeight;
+
+        } else if (status === 'failed') {
+
+            if (badge) { badge.style.background = '#c62828'; badge.textContent = 'FAILED'; }
+
+            terminalOut.textContent += '\nTask failed.\n';
+
+            terminalOut.scrollTop = terminalOut.scrollHeight;
+
+        } else if (status === 'cancelled') {
+
+            if (badge) { badge.style.background = '#ef6c00'; badge.textContent = 'CANCELLED'; }
+
+            terminalOut.textContent += '\nTask was cancelled.\n';
+
+            terminalOut.scrollTop = terminalOut.scrollHeight;
+
+        } else {
+
+            if (badge) badge.textContent = status.toUpperCase();
+
+        }
+
+
+
+        terminalCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+
+
+    } catch (e) {
+
+        terminalOut.textContent = 'Error retrieving terminal: ' + e.message;
+
+        if (badge) { badge.textContent = 'ERR'; badge.style.background = '#c62828'; }
+
+    }
+
+}
+
+</script>
+{% endblock %}

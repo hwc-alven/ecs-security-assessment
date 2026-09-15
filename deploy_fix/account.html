@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block title %}Account — ECS Security Assessment{% endblock %}
+{% block content %}
+<h1>👤 Account Settings</h1>
+
+<div class="account-layout">
+    <div class="account-sidebar">
+        <div class="card account-profile-card">
+            <div class="account-avatar">{{ username[0]|upper }}</div>
+            <h3>{{ username }}</h3>
+            <span class="badge {{ 'badge-cis' if user_info.role == 'admin' else 'badge-stig' }}">
+                {{ user_info.role|upper }}
+            </span>
+            <div class="account-meta">
+                <p><strong>Member since:</strong> {{ user_info.created_at[:10] if user_info.created_at else 'N/A' }}</p>
+                <p><strong>Last login:</strong> {{ user_info.last_login or 'N/A' }}</p>
+                <p><strong>Password changed:</strong> {{ user_info.password_changed_at[:10] if user_info.password_changed_at else 'Never' }}</p>
+                <p><strong>Status:</strong> {{ '✅ Active' if user_info.is_active else '❌ Inactive' }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔐 Active Sessions</h3>
+            <div id="sessions-list">
+                <p class="text-muted">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="account-main">
+        <div class="card">
+            <h3>🔑 Change Password</h3>
+            <p class="text-muted" style="margin-bottom: 15px;">
+                Password must be at least 8 characters with uppercase, lowercase, digit, and special character.
+            </p>
+            <form id="change-password-form" class="account-form">
+                <div class="form-group full-width">
+                    <label for="current-password">Current Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="current-password" name="current_password"
+                               placeholder="Enter your current password" required autocomplete="current-password">
+                        <button type="button" class="pwd-toggle" data-target="current-password">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="new-password">New Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="new-password" name="new_password"
+                               placeholder="Enter new password" required autocomplete="new-password">
+                        <button type="button" class="pwd-toggle" data-target="new-password">👁️</button>
+                    </div>
+                    <div class="password-strength" id="password-strength">
+                        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                        <span class="strength-label" id="strength-label">Enter a password</span>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirm-password" name="confirm_password"
+                               placeholder="Re-enter new password" required autocomplete="new-password">
+                        <button type="button" class="pwd-toggle" data-target="confirm-password">👁️</button>
+                    </div>
+                    <div class="password-match" id="password-match" style="display:none;"></div>
+                </div>
+                <div class="form-group form-actions">
+                    <button type="submit" class="btn btn-primary" id="change-pwd-btn">🔒 Change Password</button>
+                </div>
+            </form>
+            <div id="change-pwd-result"></div>
+        </div>
+
+        {% if user_info.role == 'admin' and users %}
+        <div class="card">
+            <h3>👥 User Management</h3>
+            <p class="text-muted" style="margin-bottom: 15px;">Admin-only: manage registered users and reset passwords.</p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th>Last Login</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td><strong>{{ u.username }}</strong></td>
+                        <td><span class="badge {{ 'badge-cis' if u.role == 'admin' else 'badge-stig' }}">{{ u.role }}</span></td>
+                        <td>{{ u.created_at[:10] if u.created_at else 'N/A' }}</td>
+                        <td>{{ u.last_login or 'Never' }}</td>
+                        <td>{{ '✅' if u.is_active else '❌' }}</td>
+                        <td>
+                            {% if u.username != username %}
+                            <button class="btn btn-sm btn-warning" onclick="showResetModal('{{ u.username }}')">
+                                🔑 Reset
+                            </button>
+                            {% else %}
+                            <span class="text-muted">(you)</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="reset-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+        <h3>🔑 Reset Password for <span id="reset-username"></span></h3>
+        <form id="reset-password-form">
+            <div class="form-group full-width">
+                <label for="reset-new-password">New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset-new-password" required>
+                    <button type="button" class="pwd-toggle" data-target="reset-new-password">👁️</button>
+                </div>
+            </div>
+            <div class="form-group full-width">
+                <label for="reset-confirm-password">Confirm Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset-confirm-password" required>
+                    <button type="button" class="pwd-toggle" data-target="reset-confirm-password">👁️</button>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button type="submit" class="btn btn-primary">Reset Password</button>
+                <button type="button" class="btn" onclick="closeResetModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.account-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+.account-profile-card { text-align: center; }
+.account-avatar {
+    width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 15px;
+    background: linear-gradient(135deg, #6366F1, #4F46E5); color: #EDEDEF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5em; font-weight: 700;
+}
+.account-meta { text-align: left; margin-top: 15px; font-size: 0.85em; }
+.account-meta p { margin: 6px 0; color: #A1A1AA; }
+.account-form { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.password-input-wrapper { position: relative; }
+.password-input-wrapper input { width: 100%; padding: 10px 40px 10px 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.95em; box-sizing: border-box; background: #0F0F0F; color: #EDEDEF; }
+.password-input-wrapper input::placeholder { color: #71717A; }
+.pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1em; color: #71717A; }
+.pwd-toggle:hover { color: #A1A1AA; }
+.password-strength { margin-top: 6px; }
+.strength-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.strength-fill { height: 100%; width: 0; transition: all 0.3s; }
+.strength-label { font-size: 0.8em; color: #A1A1AA; margin-top: 2px; display: inline-block; }
+.password-match { font-size: 0.82em; margin-top: 4px; }
+.password-match.ok { color: #10B981; }
+.password-match.err { color: #EF4444; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal-card { background: #0A0A0A; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px; width: 450px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); }
+.modal-card h3 { margin-bottom: 20px; color: #EDEDEF; }
+</style>
+
+<script>
+document.querySelectorAll('.pwd-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.dataset.target);
+        if (target.type === 'password') { target.type = 'text'; btn.textContent = '🙈'; }
+        else { target.type = 'password'; btn.textContent = '👁️'; }
+    });
+});
+
+const newPwd = document.getElementById('new-password');
+const confirmPwd = document.getElementById('confirm-password');
+const strengthFill = document.getElementById('strength-fill');
+const strengthLabel = document.getElementById('strength-label');
+const matchDiv = document.getElementById('password-match');
+
+function checkStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/\d/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    const colors = ['rgba(255,255,255,0.1)', '#EF4444', '#F59E0B', '#F59E0B', '#FCD34D', '#10B981', '#10B981'];
+    const labels = ['Enter a password', 'Very weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'];
+    strengthFill.style.width = (score / 6 * 100) + '%';
+    strengthFill.style.background = colors[score];
+    strengthLabel.textContent = labels[score];
+}
+
+newPwd.addEventListener('input', () => {
+    checkStrength(newPwd.value);
+    checkMatch();
+});
+confirmPwd.addEventListener('input', checkMatch);
+
+function checkMatch() {
+    if (!confirmPwd.value) { matchDiv.style.display = 'none'; return; }
+    matchDiv.style.display = 'block';
+    if (newPwd.value === confirmPwd.value) {
+        matchDiv.className = 'password-match ok';
+        matchDiv.textContent = '✅ Passwords match';
+    } else {
+        matchDiv.className = 'password-match err';
+        matchDiv.textContent = '❌ Passwords do not match';
+    }
+}
+
+document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('change-pwd-btn');
+    const result = document.getElementById('change-pwd-result');
+
+    if (newPwd.value !== confirmPwd.value) {
+        result.innerHTML = '<div class="warn-box">❌ Passwords do not match.</div>';
+        return;
+    }
+
+    btn.disabled = true; btn.textContent = '⏳ Changing...';
+    try {
+        const resp = await fetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_password: document.getElementById('current-password').value,
+                new_password: newPwd.value,
+            }),
+        });
+        const data = await resp.json();
+        if (data.success) {
+            result.innerHTML = '<div class="success-box">✅ ' + data.message + ' Please log in again.</div>';
+            setTimeout(() => { window.location.href = '/login'; }, 2000);
+        } else {
+            result.innerHTML = '<div class="warn-box">❌ ' + (data.error || 'Failed') + '</div>';
+            btn.disabled = false; btn.textContent = '🔒 Change Password';
+        }
+    } catch (err) {
+        result.innerHTML = '<div class="warn-box">❌ Network error: ' + err.message + '</div>';
+        btn.disabled = false; btn.textContent = '🔒 Change Password';
+    }
+});
+
+async function loadSessions() {
+    try {
+        const resp = await fetch('/api/auth/sessions');
+        const data = await resp.json();
+        const div = document.getElementById('sessions-list');
+        if (data.sessions.length === 0) { div.innerHTML = '<p class="text-muted">No active sessions</p>'; return; }
+        div.innerHTML = data.sessions.map(s => `
+            <div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.85em;">
+                <strong>${s.username}</strong> from ${s.ip_address || 'N/A'}<br>
+                <span class="text-muted">Expires: ${s.expires_at}</span>
+                ${s.is_current ? ' <span class="badge badge-cis">Current</span>' : ''}
+            </div>
+        `).join('');
+    } catch (e) { document.getElementById('sessions-list').innerHTML = '<p class="text-muted">Failed to load</p>'; }
+}
+loadSessions();
+
+let resetUsername = '';
+function showResetModal(username) {
+    resetUsername = username;
+    document.getElementById('reset-username').textContent = username;
+    document.getElementById('reset-modal').style.display = 'flex';
+    document.getElementById('reset-new-password').value = '';
+    document.getElementById('reset-confirm-password').value = '';
+}
+function closeResetModal() { document.getElementById('reset-modal').style.display = 'none'; }
+
+document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newP = document.getElementById('reset-new-password').value;
+    const confP = document.getElementById('reset-confirm-password').value;
+    if (newP !== confP) { alert('Passwords do not match'); return; }
+    try {
+        const resp = await fetch('/api/auth/admin/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: resetUsername, new_password: newP }),
+        });
+        const data = await resp.json();
+        if (data.success) { alert('✅ ' + data.message); closeResetModal(); location.reload(); }
+        else { alert('❌ ' + (data.error || 'Failed')); }
+    } catch (err) { alert('❌ ' + err.message); }
+});
+</script>
+{% endblock %}

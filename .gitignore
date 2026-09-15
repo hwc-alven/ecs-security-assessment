@@ -1,0 +1,45 @@
+# Sensitive files - DO NOT commit
+ssh_helper.py
+askpass.cmd
+askpass.py
+rssh.ps1
+check_creds.py
+
+# Deploy/debug/test scripts (contain credentials)
+deploy_*.py
+debug_*.py
+debug*.py
+test_*.py
+verify_*.py
+fetch_*.py
+run_test_*.py
+find_gap.py
+fix_*.py
+redeploy_*.py
+explore_app.py
+portscan.py
+test_port.py
+final_*.py
+e2e_verify.py
+
+# Session transcripts
+CodeArts Agent *.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Reports (generated)
+reports/
+*.bak
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

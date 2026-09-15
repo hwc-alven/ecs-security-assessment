@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — ECS Security Assessment{% endblock %}
+{% block content %}
+<h1>📋 Audit Log</h1>
+
+<div class="audit-stats-bar">
+    <div class="audit-stat-card">
+        <span class="stat-icon">📊</span>
+        <span class="stat-value">{{ stats.total }}</span>
+        <span class="stat-label">Total Events</span>
+    </div>
+    <div class="audit-stat-card">
+        <span class="stat-icon">🕐</span>
+        <span class="stat-value">{{ stats.last_1h }}</span>
+        <span class="stat-label">Last Hour</span>
+    </div>
+    <div class="audit-stat-card">
+        <span class="stat-icon">📅</span>
+        <span class="stat-value">{{ stats.last_24h }}</span>
+        <span class="stat-label">Last 24 Hours</span>
+    </div>
+    <div class="audit-stat-card">
+        <span class="stat-icon">⚠️</span>
+        <span class="stat-value">{{ stats.by_severity.get('warning', 0) }}</span>
+        <span class="stat-label">Warnings</span>
+    </div>
+    <div class="audit-stat-card">
+        <span class="stat-icon">❌</span>
+        <span class="stat-value">{{ stats.by_severity.get('error', 0) }}</span>
+        <span class="stat-label">Errors</span>
+    </div>
+</div>
+
+<div class="card audit-filter-card">
+    <h3>🔍 Filter & Search</h3>
+    <form id="audit-filter-form" class="audit-filter-form">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="filter-search">Search Text</label>
+                <input type="text" id="filter-search" placeholder="Search in details, username, event type..."
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="filter-group">
+                <label for="filter-event-type">Event Type</label>
+                <select id="filter-event-type" style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Events</option>
+                    {% for et, info in event_types.items() %}
+                    <option value="{{ et }}">{{ info.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-severity">Severity</label>
+                <select id="filter-severity" style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Severities</option>
+                    <option value="info">ℹ️ Info</option>
+                    <option value="warning">⚠️ Warning</option>
+                    <option value="error">❌ Error</option>
+                </select>
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="filter-start-date">Start Date</label>
+                <input type="date" id="filter-start-date" style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="filter-group">
+                <label for="filter-end-date">End Date</label>
+                <input type="date" id="filter-end-date" style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div class="filter-group" style="display: flex; align-items: flex-end; gap: 8px;">
+                <button type="button" class="btn btn-primary" onclick="queryAuditLog()">🔍 Apply Filter</button>
+                <button type="button" class="btn" onclick="clearFilters()">Clear</button>
+                <button type="button" class="btn btn-info" onclick="exportAuditLog('csv')">📥 Export CSV</button>
+                <button type="button" class="btn btn-info" onclick="exportAuditLog('json')">📥 Export JSON</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="audit-table-header">
+        <h3>📝 Log Entries</h3>
+        <span id="audit-count-badge" class="badge badge-unknown">0 entries</span>
+    </div>
+
+    <div id="audit-loading" style="text-align: center; padding: 40px; color: #9e9e9e;">
+        <span class="spinner"></span> Loading audit log...
+    </div>
+
+    <div id="audit-empty" style="display: none; text-align: center; padding: 40px; color: #9e9e9e;">
+        <p>📭 No audit log entries found matching your filters.</p>
+    </div>
+
+    <table class="data-table audit-table" id="audit-table" style="display: none;">
+        <thead>
+            <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 160px;">Timestamp</th>
+                <th style="width: 140px;">Event</th>
+                <th style="width: 70px;">Severity</th>
+                <th style="width: 100px;">User</th>
+                <th style="width: 120px;">IP Address</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody id="audit-tbody">
+        </tbody>
+    </table>
+
+    <div id="audit-pagination" style="display: none; text-align: center; margin-top: 20px;">
+        <button class="btn btn-sm" id="audit-prev-btn" onclick="changePage(-1)">← Previous</button>
+        <span id="audit-page-info" style="margin: 0 15px; color: #666;"></span>
+        <button class="btn btn-sm" id="audit-next-btn" onclick="changePage(1)">Next →</button>
+    </div>
+</div>
+
+<style>
+    .audit-stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin: 20px 0;
+    }
+    .audit-stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .audit-stat-card .stat-icon { font-size: 1.5em; margin-bottom: 4px; }
+    .audit-stat-card .stat-value { font-size: 1.8em; font-weight: 700; color: #1a237e; }
+    .audit-stat-card .stat-label { font-size: 0.85em; color: #78909c; margin-top: 2px; }
+
+    .audit-filter-card { margin-bottom: 15px; }
+    .audit-filter-form .filter-row {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .audit-filter-form .filter-row:last-child {
+        grid-template-columns: 1fr 1fr 2fr;
+    }
+    .filter-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 0.85em;
+        color: #37474f;
+    }
+
+    .audit-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .audit-table td { font-size: 0.85em; vertical-align: top; }
+    .audit-table .severity-info { color: #1565c0; }
+    .audit-table .severity-warning { color: #ef6c00; font-weight: 600; }
+    .audit-table .severity-error { color: #c62828; font-weight: 700; }
+    .audit-table .event-cell { font-weight: 600; }
+    .audit-table .timestamp-cell { color: #616161; font-family: 'Consolas', monospace; font-size: 0.82em; }
+    .audit-table .ip-cell { font-family: 'Consolas', monospace; font-size: 0.82em; color: #616161; }
+    .audit-table .details-cell { max-width: 400px; word-break: break-word; }
+    .audit-table tr.row-info { background: #f8f9fa; }
+    .audit-table tr.row-warning { background: #fff8e1; }
+    .audit-table tr.row-error { background: #ffebee; }
+</style>
+
+<script>
+    let currentPage = 0;
+    const pageLimit = 200;
+
+    function getFilters() {
+        return {
+            search: document.getElementById('filter-search').value.trim() || null,
+            event_type: document.getElementById('filter-event-type').value || null,
+            severity: document.getElementById('filter-severity').value || null,
+            start_date: document.getElementById('filter-start-date').value || null,
+            end_date: document.getElementById('filter-end-date').value || null,
+        };
+    }
+
+    async function queryAuditLog() {
+        const loading = document.getElementById('audit-loading');
+        const table = document.getElementById('audit-table');
+        const empty = document.getElementById('audit-empty');
+        const tbody = document.getElementById('audit-tbody');
+        const countBadge = document.getElementById('audit-count-badge');
+        const pagination = document.getElementById('audit-pagination');
+
+        loading.style.display = 'block';
+        table.style.display = 'none';
+        empty.style.display = 'none';
+        pagination.style.display = 'none';
+
+        const filters = getFilters();
+        const params = new URLSearchParams({
+            limit: pageLimit,
+            offset: currentPage * pageLimit,
+        });
+        if (filters.search) params.set('search', filters.search);
+        if (filters.event_type) params.set('event_type', filters.event_type);
+        if (filters.severity) params.set('severity', filters.severity);
+        if (filters.start_date) params.set('start_date', filters.start_date);
+        if (filters.end_date) params.set('end_date', filters.end_date);
+
+        try {
+            const resp = await fetch(`/api/audit-log/query?${params}`);
+            const data = await resp.json();
+
+            loading.style.display = 'none';
+            countBadge.textContent = `${data.total} entries`;
+
+            if (data.entries.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            tbody.innerHTML = '';
+
+            for (const entry of data.entries) {
+                const row = document.createElement('tr');
+                row.className = `row-${entry.severity}`;
+
+                const sevIcon = entry.severity === 'error' ? '❌' :
+                               entry.severity === 'warning' ? '⚠️' : 'ℹ️';
+
+                row.innerHTML = `
+                    <td>${entry.id}</td>
+                    <td class="timestamp-cell">${entry.timestamp_local}</td>
+                    <td class="event-cell">${entry.event_label}</td>
+                    <td class="severity-${entry.severity}">${sevIcon} ${entry.severity}</td>
+                    <td>${entry.username}</td>
+                    <td class="ip-cell">${entry.ip_address || '—'}</td>
+                    <td class="details-cell">${entry.details || ''}</td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            // Pagination
+            if (data.total > pageLimit) {
+                pagination.style.display = 'block';
+                const start = currentPage * pageLimit + 1;
+                const end = Math.min((currentPage + 1) * pageLimit, data.total);
+                document.getElementById('audit-page-info').textContent =
+                    `Showing ${start}–${end} of ${data.total}`;
+                document.getElementById('audit-prev-btn').disabled = currentPage === 0;
+                document.getElementById('audit-next-btn').disabled = !data.has_more;
+            }
+        } catch (err) {
+            loading.style.display = 'none';
+            empty.style.display = 'block';
+            empty.querySelector('p').textContent = '❌ Error loading audit log: ' + err.message;
+        }
+    }
+
+    function changePage(delta) {
+        const newPage = currentPage + delta;
+        if (newPage >= 0) {
+            currentPage = newPage;
+            queryAuditLog();
+        }
+    }
+
+    function clearFilters() {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-event-type').value = '';
+        document.getElementById('filter-severity').value = '';
+        document.getElementById('filter-start-date').value = '';
+        document.getElementById('filter-end-date').value = '';
+        currentPage = 0;
+        queryAuditLog();
+    }
+
+    function exportAuditLog(format) {
+        window.open(`/api/audit-log/export?format=${format}`, '_blank');
+    }
+
+    // Debounced search on typing
+    let searchTimeout;
+    document.getElementById('filter-search').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentPage = 0;
+            queryAuditLog();
+        }, 400);
+    });
+
+    // Auto-filter on dropdown change
+    ['filter-event-type', 'filter-severity', 'filter-start-date', 'filter-end-date'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+            currentPage = 0;
+            queryAuditLog();
+        });
+    });
+
+    // Load on page open
+    queryAuditLog();
+</script>
+{% endblock %}
