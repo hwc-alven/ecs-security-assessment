@@ -38,7 +38,7 @@
             <div class="filter-group">
                 <label for="filter-search">Search Text</label>
                 <input type="text" id="filter-search" placeholder="Search in details, username, event type..."
-                       style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;">
+                       style="width: 100%; padding: 8px 12px; border: 1px solid var(--theme-border); border-radius: 4px;">
             </div>
             <div class="filter-group">
                 <label for="filter-event-type">Event Type</label>
@@ -84,11 +84,11 @@
         <span id="audit-count-badge" class="badge badge-unknown">0 entries</span>
     </div>
 
-    <div id="audit-loading" style="text-align: center; padding: 40px; color: #9e9e9e;">
+    <div id="audit-loading" style="text-align: center; padding: 40px; color: var(--theme-text-muted);">
         <span class="spinner"></span> Loading audit log...
     </div>
 
-    <div id="audit-empty" style="display: none; text-align: center; padding: 40px; color: #9e9e9e;">
+    <div id="audit-empty" style="display: none; text-align: center; padding: 40px; color: var(--theme-text-muted);">
         <p>📭 No audit log entries found matching your filters.</p>
     </div>
 
@@ -110,7 +110,7 @@
 
     <div id="audit-pagination" style="display: none; text-align: center; margin-top: 20px;">
         <button class="btn btn-sm" id="audit-prev-btn" onclick="changePage(-1)">← Previous</button>
-        <span id="audit-page-info" style="margin: 0 15px; color: #666;"></span>
+        <span id="audit-page-info" style="margin: 0 15px; color: var(--theme-text-secondary);"></span>
         <button class="btn btn-sm" id="audit-next-btn" onclick="changePage(1)">Next →</button>
     </div>
 </div>
@@ -123,18 +123,19 @@
         margin: 20px 0;
     }
     .audit-stat-card {
-        background: white;
+        background: var(--theme-bg-card);
+        border: 1px solid var(--theme-border-subtle);
         border-radius: 8px;
         padding: 16px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        box-shadow: var(--theme-shadow);
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
     .audit-stat-card .stat-icon { font-size: 1.5em; margin-bottom: 4px; }
-    .audit-stat-card .stat-value { font-size: 1.8em; font-weight: 700; color: #1a237e; }
-    .audit-stat-card .stat-label { font-size: 0.85em; color: #78909c; margin-top: 2px; }
+    .audit-stat-card .stat-value { font-size: 1.8em; font-weight: 700; color: var(--theme-text-primary); }
+    .audit-stat-card .stat-label { font-size: 0.85em; color: var(--theme-text-secondary); margin-top: 2px; }
 
     .audit-filter-card { margin-bottom: 15px; }
     .audit-filter-form .filter-row {
@@ -151,7 +152,7 @@
         font-weight: 600;
         margin-bottom: 4px;
         font-size: 0.85em;
-        color: #37474f;
+        color: var(--theme-text-secondary);
     }
 
     .audit-table-header {
@@ -162,16 +163,16 @@
     }
 
     .audit-table td { font-size: 0.85em; vertical-align: top; }
-    .audit-table .severity-info { color: #1565c0; }
-    .audit-table .severity-warning { color: #ef6c00; font-weight: 600; }
-    .audit-table .severity-error { color: #c62828; font-weight: 700; }
+    .audit-table .severity-info { color: var(--theme-accent); }
+    .audit-table .severity-warning { color: var(--theme-warning); font-weight: 600; }
+    .audit-table .severity-error { color: var(--theme-error); font-weight: 700; }
     .audit-table .event-cell { font-weight: 600; }
-    .audit-table .timestamp-cell { color: #616161; font-family: 'Consolas', monospace; font-size: 0.82em; }
-    .audit-table .ip-cell { font-family: 'Consolas', monospace; font-size: 0.82em; color: #616161; }
+    .audit-table .timestamp-cell { color: var(--theme-text-secondary); font-family: 'Consolas', monospace; font-size: 0.82em; }
+    .audit-table .ip-cell { font-family: 'Consolas', monospace; font-size: 0.82em; color: var(--theme-text-secondary); }
     .audit-table .details-cell { max-width: 400px; word-break: break-word; }
-    .audit-table tr.row-info { background: #f8f9fa; }
-    .audit-table tr.row-warning { background: #fff8e1; }
-    .audit-table tr.row-error { background: #ffebee; }
+    .audit-table tr.row-info { background: rgba(59, 130, 246, 0.04); }
+    .audit-table tr.row-warning { background: rgba(245, 158, 11, 0.04); }
+    .audit-table tr.row-error { background: rgba(239, 68, 68, 0.04); }
 </style>
 
 <script>

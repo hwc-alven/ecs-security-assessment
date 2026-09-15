@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register — ECS Security Assessment</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <link rel="stylesheet" href="/static/css/style.css?v=5">
     <style>
         .login-wrapper {
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
@@ -18,44 +24,72 @@
         }
         @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.5;} 50%{transform:scale(1.2);opacity:1;} }
         .login-card {
-            background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: var(--theme-bg-card); border: 1px solid var(--theme-border); border-radius: 16px; box-shadow: var(--theme-shadow-card);
             width: 460px; max-width: 90vw; padding: 40px; position: relative; z-index: 1;
         }
         .login-header { text-align: center; margin-bottom: 25px; }
         .login-icon { font-size: 48px; margin-bottom: 10px; display: block; }
-        .login-title { color: #1a237e; font-size: 1.5em; font-weight: 700; margin: 0; }
-        .login-subtitle { color: #78909c; font-size: 0.9em; margin-top: 5px; }
+        .login-title { color: var(--theme-text-primary); font-size: 1.5em; font-weight: 700; margin: 0; }
+        .login-subtitle { color: var(--theme-text-secondary); font-size: 0.9em; margin-top: 5px; }
         .login-form .form-group { margin-bottom: 16px; }
-        .login-form label { display: block; font-weight: 600; color: #37474f; margin-bottom: 5px; font-size: 0.88em; }
-        .login-form input { width: 100%; padding: 11px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.95em; transition: all 0.2s; box-sizing: border-box; }
-        .login-form input:focus { border-color: #1a237e; outline: none; box-shadow: 0 0 0 3px rgba(26,35,126,0.1); }
+        .login-form label { display: block; font-weight: 600; color: var(--theme-text-secondary); margin-bottom: 5px; font-size: 0.88em; }
+        .login-form input { width: 100%; padding: 11px 14px; border: 1px solid var(--theme-border); border-radius: 8px; background: var(--theme-bg-input); color: var(--theme-text-primary); font-size: 0.95em; transition: all 0.2s; box-sizing: border-box; }
+        .login-form input:focus { border-color: var(--theme-accent); outline: none; box-shadow: 0 0 0 3px var(--theme-accent-glow); }
         .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 5px; }
         .login-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,35,126,0.3); }
         .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .login-error { background: #ffebee; border-left: 4px solid #f44336; color: #c62828; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 0.88em; display: none; }
+        .login-error { background: rgba(239, 68, 68, 0.08); border-left: 4px solid var(--theme-error); color: var(--theme-error); padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; font-size: 0.88em; display: none; }
         .login-error.show { display: block; }
-        .login-footer { text-align: center; margin-top: 20px; color: #9e9e9e; font-size: 0.8em; }
+        .login-footer { text-align: center; margin-top: 20px; color: var(--theme-text-muted); font-size: 0.8em; }
         .login-link { text-align: center; margin-top: 18px; font-size: 0.88em; }
-        .login-link a { color: #1a237e; text-decoration: none; font-weight: 600; }
+        .login-link a { color: var(--theme-accent); text-decoration: none; font-weight: 600; }
         .login-link a:hover { text-decoration: underline; }
         .password-input-wrapper { position: relative; }
-        .pwd-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1em; color: #9e9e9e; }
-        .pwd-toggle-btn:hover { color: #616161; }
+        .pwd-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1em; color: var(--theme-text-muted); }
+        .pwd-toggle-btn:hover { color: var(--theme-text-primary); }
         .password-strength { margin-top: 5px; }
-        .strength-bar { height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
+        .strength-bar { height: 4px; background: var(--theme-strength-track, rgba(0,0,0,0.06)); border-radius: 2px; overflow: hidden; }
         .strength-fill { height: 100%; width: 0; transition: all 0.3s; }
-        .strength-label { font-size: 0.78em; color: #78909c; }
-        .password-rules { font-size: 0.78em; color: #78909c; margin-top: 6px; line-height: 1.5; }
+        .strength-label { font-size: 0.78em; color: var(--theme-text-secondary); }
+        .password-rules { font-size: 0.78em; color: var(--theme-text-secondary); margin-top: 6px; line-height: 1.5; }
         .password-rules ul { list-style: none; padding: 0; }
         .password-rules li { padding: 1px 0; }
-        .password-rules li.met { color: #2e7d32; }
+        .password-rules li.met { color: var(--theme-success); }
         .password-rules li.met::before { content: '✅ '; }
         .password-rules li:not(.met)::before { content: '⬜ '; }
         .login-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+        .theme-toggle {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 1px solid var(--theme-border); background: var(--theme-bg-card);
+            color: var(--theme-text-secondary); cursor: pointer; transition: all 0.2s ease;
+        }
+        .theme-toggle:hover { border-color: var(--theme-accent); color: var(--theme-accent); }
+        .theme-toggle svg { width: 18px; height: 18px; }
+        .theme-toggle .sun-icon { display: none; }
+        .theme-toggle .moon-icon { display: block; }
+        [data-theme="light"] .theme-toggle .sun-icon { display: block; }
+        [data-theme="light"] .theme-toggle .moon-icon { display: none; }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
     <div class="login-wrapper">
         <div class="login-card">
             <div class="login-header">
@@ -125,6 +159,13 @@
     </div>
 
     <script>
+        function toggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme') || 'dark';
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+
         function togglePwd(id, btn) {
             const el = document.getElementById(id);
             if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }

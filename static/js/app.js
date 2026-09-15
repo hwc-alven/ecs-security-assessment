@@ -1,5 +1,23 @@
 /* ECS Security Assessment Console — JavaScript */
 
+/* ── Theme toggle (light/dark) ──
+   Persists the user's choice in localStorage and applies it by
+   setting data-theme on <html>. The inline script in each page's
+   <head> sets the attribute before CSS loads to prevent a flash;
+   this function handles user-initiated toggling. */
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+}
+
+// Apply saved theme on load (fallback if the inline head script didn't run)
+(function() {
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+})();
+
 // Helper: show result message
 function showResult(message, type = 'info') {
     const area = document.getElementById('result-area');

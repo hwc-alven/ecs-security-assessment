@@ -75,6 +75,125 @@
     --t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --t-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --t-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ── Theme colors - Dark (default) ──
+       These --theme-* tokens drive light/dark switching.
+       The existing tokens above (e.g. --bg-canvas) are mapped to
+       these in both :root and [data-theme="light"] so every
+       var() reference adapts automatically. */
+    --theme-bg-canvas: #080808;
+    --theme-bg-canvas-elevated: #0A0A0A;
+    --theme-bg-card: #0A0A0A;
+    --theme-bg-card-hover: #0F0F0F;
+    --theme-bg-input: #0F0F0F;
+    --theme-bg-input-hover: #141414;
+    --theme-text-primary: #EDEDEF;
+    --theme-text-secondary: #A1A1AA;
+    --theme-text-muted: #71717A;
+    --theme-text-inverse: #080808;
+    --theme-border: rgba(255, 255, 255, 0.1);
+    --theme-border-subtle: rgba(255, 255, 255, 0.06);
+    --theme-border-strong: rgba(255, 255, 255, 0.15);
+    --theme-accent: #6366F1;
+    --theme-accent-hover: #5558E6;
+    --theme-accent-glow: rgba(99, 102, 241, 0.15);
+    --theme-success: #10B981;
+    --theme-warning: #F59E0B;
+    --theme-error: #EF4444;
+    --theme-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --theme-shadow-card: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --theme-overlay: rgba(0, 0, 0, 0.7);
+    --theme-navbar-bg: rgba(8, 8, 8, 0.72);
+    --theme-navbar-bg-solid: rgba(8, 8, 8, 0.95);
+    --theme-hover-bg: rgba(255, 255, 255, 0.05);
+    --theme-hover-bg-strong: rgba(255, 255, 255, 0.08);
+    --theme-surface-subtle: rgba(255, 255, 255, 0.03);
+    --theme-surface-faint: rgba(255, 255, 255, 0.02);
+    --theme-code-bg: #050506;
+    --theme-spinner-track: rgba(255, 255, 255, 0.1);
+    --theme-strength-track: rgba(255, 255, 255, 0.06);
+    --theme-scrollbar-track: rgba(255, 255, 255, 0.02);
+    --theme-scrollbar-thumb: rgba(255, 255, 255, 0.1);
+    --theme-scrollbar-thumb-hover: rgba(255, 255, 255, 0.15);
+    --theme-skeleton-1: rgba(255, 255, 255, 0.03);
+    --theme-skeleton-2: rgba(255, 255, 255, 0.06);
+    --theme-card-shimmer: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Light theme overrides ──
+   Override both the new --theme-* tokens and the legacy tokens
+   so every part of the UI (existing var() references included)
+   adapts to the light theme. Terminal colors are intentionally
+   kept hardcoded so the terminal stays dark in both themes. */
+[data-theme="light"] {
+    /* New theme tokens */
+    --theme-bg-canvas: #f5f5f7;
+    --theme-bg-canvas-elevated: #ffffff;
+    --theme-bg-card: #ffffff;
+    --theme-bg-card-hover: #f0f0f2;
+    --theme-bg-input: #f5f5f7;
+    --theme-bg-input-hover: #ececef;
+    --theme-text-primary: #1d1d1f;
+    --theme-text-secondary: #555555;
+    --theme-text-muted: #86868b;
+    --theme-text-inverse: #ffffff;
+    --theme-border: rgba(0, 0, 0, 0.08);
+    --theme-border-subtle: rgba(0, 0, 0, 0.05);
+    --theme-border-strong: rgba(0, 0, 0, 0.12);
+    --theme-accent: #4F46E5;
+    --theme-accent-hover: #4338CA;
+    --theme-accent-glow: rgba(79, 70, 229, 0.1);
+    --theme-success: #059669;
+    --theme-warning: #D97706;
+    --theme-error: #DC2626;
+    --theme-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --theme-shadow-card: 0 20px 60px rgba(0, 0, 0, 0.08);
+    --theme-overlay: rgba(0, 0, 0, 0.4);
+    --theme-navbar-bg: rgba(255, 255, 255, 0.72);
+    --theme-navbar-bg-solid: rgba(255, 255, 255, 0.95);
+    --theme-hover-bg: rgba(0, 0, 0, 0.04);
+    --theme-hover-bg-strong: rgba(0, 0, 0, 0.06);
+    --theme-surface-subtle: rgba(0, 0, 0, 0.02);
+    --theme-surface-faint: rgba(0, 0, 0, 0.015);
+    --theme-code-bg: #f5f5f7;
+    --theme-spinner-track: rgba(0, 0, 0, 0.1);
+    --theme-strength-track: rgba(0, 0, 0, 0.06);
+    --theme-scrollbar-track: rgba(0, 0, 0, 0.02);
+    --theme-scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --theme-scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+    --theme-skeleton-1: rgba(0, 0, 0, 0.05);
+    --theme-skeleton-2: rgba(0, 0, 0, 0.08);
+    --theme-card-shimmer: rgba(0, 0, 0, 0.02);
+
+    /* Legacy tokens — re-map so existing var() references adapt */
+    --bg-canvas: #f5f5f7;
+    --bg-canvas-elevated: #ffffff;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(240, 240, 242, 0.9);
+    --bg-input: rgba(0, 0, 0, 0.03);
+    --bg-input-hover: rgba(0, 0, 0, 0.05);
+    --text-primary: #1d1d1f;
+    --text-secondary: #555555;
+    --text-tertiary: #86868b;
+    --text-inverse: #ffffff;
+    --accent-indigo: #4F46E5;
+    --accent-indigo-hover: #4338CA;
+    --accent-glow: rgba(79, 70, 229, 0.1);
+    --accent-glow-strong: rgba(79, 70, 229, 0.2);
+    --success: #059669;
+    --success-glow: rgba(5, 150, 105, 0.2);
+    --warning: #D97706;
+    --warning-glow: rgba(217, 119, 6, 0.2);
+    --error: #DC2626;
+    --error-glow: rgba(220, 38, 38, 0.2);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    --border-default: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.12);
+    --border-focus: rgba(79, 70, 229, 0.4);
+    --sh-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --sh-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --sh-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --sh-glow: 0 0 20px rgba(79, 70, 229, 0.2);
 }
 
 /* ── Reset ── */
@@ -113,7 +232,7 @@ a:hover { color: var(--accent-indigo-hover); }
    NAVBAR — Glassmorphism with backdrop blur
    ═══════════════════════════════════════════════════════════════ */
 .navbar {
-    background: rgba(8, 8, 8, 0.72);
+    background: var(--theme-navbar-bg);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border-bottom: 1px solid var(--border-default);
@@ -173,7 +292,7 @@ a:hover { color: var(--accent-indigo-hover); }
     border-radius: 2px;
     transition: all var(--t-slow);
 }
-.nav-toggle:hover { background: rgba(255, 255, 255, 0.05); }
+.nav-toggle:hover { background: var(--theme-hover-bg); }
 .nav-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
 .nav-toggle.active span:nth-child(2) { opacity: 0; }
 .nav-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
@@ -214,7 +333,7 @@ a:hover { color: var(--accent-indigo-hover); }
 }
 .nav-link:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--theme-hover-bg);
 }
 .nav-link.active {
     color: var(--text-primary);
@@ -256,7 +375,7 @@ a:hover { color: var(--accent-indigo-hover); }
         top: 56px;
         left: 0;
         right: 0;
-        background: rgba(8, 8, 8, 0.95);
+        background: var(--theme-navbar-bg-solid);
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
         flex-direction: column;
@@ -314,7 +433,7 @@ a:hover { color: var(--accent-indigo-hover); }
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.03) 50%, transparent 60%);
+    background: linear-gradient(135deg, transparent 40%, var(--theme-card-shimmer) 50%, transparent 60%);
     background-size: 200% 200%;
     background-position: 100% 100%;
     opacity: 0;
@@ -420,7 +539,7 @@ a:hover { color: var(--accent-indigo-hover); }
    CODE BLOCK
    ═══════════════════════════════════════════════════════════════ */
 .code-block {
-    background: #050506;
+    background: var(--theme-code-bg);
     color: var(--text-primary);
     padding: var(--sp-4);
     border-radius: var(--r-md);
@@ -505,7 +624,7 @@ input[type="file"] {
     padding: var(--sp-3) var(--sp-5);
     border: 1px solid var(--border-default);
     border-radius: var(--r-md);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--theme-hover-bg);
     color: var(--text-primary);
     font-size: 0.875rem;
     font-weight: 500;
@@ -516,7 +635,7 @@ input[type="file"] {
     white-space: nowrap;
 }
 .btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--theme-hover-bg-strong);
     border-color: var(--border-strong);
 }
 .btn:focus-visible {
@@ -575,7 +694,7 @@ input[type="file"] {
     font-size: 0.875rem;
 }
 .data-table th {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--theme-surface-subtle);
     color: var(--text-secondary);
     padding: var(--sp-3) var(--sp-4);
     text-align: left;
@@ -589,8 +708,8 @@ input[type="file"] {
     padding: var(--sp-3) var(--sp-4);
     color: var(--text-primary);
 }
-.data-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-.data-table tr:nth-child(even) td { background: rgba(255, 255, 255, 0.01); }
+.data-table tr:hover td { background: var(--theme-surface-faint); }
+.data-table tr:nth-child(even) td { background: var(--theme-surface-faint); }
 
 /* Table scroll wrapper for mobile */
 .table-wrapper {
@@ -818,7 +937,7 @@ input[type="file"] {
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--theme-spinner-track);
     border-top: 2px solid var(--accent-indigo);
     border-radius: 50%;
     animation: spin 800ms linear infinite;
@@ -1016,7 +1135,7 @@ input[type="file"] {
 
 /* Password strength */
 .password-strength { margin-top: var(--sp-2); }
-.strength-bar { height: 4px; background: rgba(255, 255, 255, 0.06); border-radius: 2px; overflow: hidden; }
+.strength-bar { height: 4px; background: var(--theme-strength-track); border-radius: 2px; overflow: hidden; }
 .strength-fill { height: 100%; width: 0; transition: all var(--t-slow); border-radius: 2px; }
 .strength-label { font-size: 0.78em; color: var(--text-secondary); margin-top: 2px; display: inline-block; }
 .password-rules { font-size: 0.78em; color: var(--text-secondary); margin-top: var(--sp-2); line-height: 1.5; }
@@ -1093,7 +1212,7 @@ input[type="file"] {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--theme-overlay);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     z-index: 1000;
@@ -1233,9 +1352,9 @@ input[type="file"] {
 /* Skeleton loading */
 .skeleton {
     background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0.03) 0%,
-        rgba(255, 255, 255, 0.06) 50%,
-        rgba(255, 255, 255, 0.03) 100%);
+        var(--theme-skeleton-1) 0%,
+        var(--theme-skeleton-2) 50%,
+        var(--theme-skeleton-1) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
     border-radius: var(--r-sm);
@@ -1247,11 +1366,11 @@ input[type="file"] {
    SCROLLBAR STYLING
    ═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+::-webkit-scrollbar-track { background: var(--theme-scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--theme-scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--theme-scrollbar-thumb-hover); }
 
-/* Terminal scrollbar */
+/* Terminal scrollbar — intentionally kept dark in both themes */
 #terminal-output::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
 #terminal-output::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
 
@@ -1286,4 +1405,42 @@ input[type="file"] {
 ::selection {
     background: rgba(99, 102, 241, 0.3);
     color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME TOGGLE BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg-card);
+    color: var(--theme-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+.theme-toggle:hover {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+}
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+.theme-toggle .sun-icon { display: none; }
+.theme-toggle .moon-icon { display: block; }
+[data-theme="light"] .theme-toggle .sun-icon { display: block; }
+[data-theme="light"] .theme-toggle .moon-icon { display: none; }
+
+/* Navbar light theme refinement */
+[data-theme="light"] .navbar {
+    background: var(--theme-navbar-bg);
+    border-bottom: 1px solid var(--theme-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }

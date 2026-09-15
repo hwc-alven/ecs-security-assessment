@@ -147,22 +147,22 @@
     font-size: 2.5em; font-weight: 700;
 }
 .account-meta { text-align: left; margin-top: 15px; font-size: 0.85em; }
-.account-meta p { margin: 6px 0; color: #555; }
+.account-meta p { margin: 6px 0; color: var(--theme-text-secondary); }
 .account-form { display: grid; grid-template-columns: 1fr; gap: 15px; }
 .password-input-wrapper { position: relative; }
-.password-input-wrapper input { width: 100%; padding: 10px 40px 10px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; box-sizing: border-box; }
-.pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1em; color: #9e9e9e; }
-.pwd-toggle:hover { color: #616161; }
+.password-input-wrapper input { width: 100%; padding: 10px 40px 10px 12px; border: 1px solid var(--theme-border); border-radius: 4px; background: var(--theme-bg-input); color: var(--theme-text-primary); font-size: 0.95em; box-sizing: border-box; }
+.pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1em; color: var(--theme-text-muted); }
+.pwd-toggle:hover { color: var(--theme-text-primary); }
 .password-strength { margin-top: 6px; }
-.strength-bar { height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
+.strength-bar { height: 4px; background: var(--theme-strength-track, rgba(0,0,0,0.06)); border-radius: 2px; overflow: hidden; }
 .strength-fill { height: 100%; width: 0; transition: all 0.3s; }
-.strength-label { font-size: 0.8em; color: #78909c; margin-top: 2px; display: inline-block; }
+.strength-label { font-size: 0.8em; color: var(--theme-text-secondary); margin-top: 2px; display: inline-block; }
 .password-match { font-size: 0.82em; margin-top: 4px; }
-.password-match.ok { color: #2e7d32; }
-.password-match.err { color: #c62828; }
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-.modal-card { background: white; border-radius: 12px; padding: 30px; width: 450px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-.modal-card h3 { margin-bottom: 20px; color: #1a237e; }
+.password-match.ok { color: var(--theme-success); }
+.password-match.err { color: var(--theme-error); }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--theme-overlay); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal-card { background: var(--theme-bg-card); border: 1px solid var(--theme-border); border-radius: 12px; padding: 30px; width: 450px; max-width: 90vw; box-shadow: var(--theme-shadow-card); }
+.modal-card h3 { margin-bottom: 20px; color: var(--theme-text-primary); }
 </style>
 
 <script>
@@ -254,7 +254,7 @@ async function loadSessions() {
         const div = document.getElementById('sessions-list');
         if (data.sessions.length === 0) { div.innerHTML = '<p class="text-muted">No active sessions</p>'; return; }
         div.innerHTML = data.sessions.map(s => `
-            <div style="padding:8px 0; border-bottom:1px solid #eee; font-size:0.85em;">
+            <div style="padding:8px 0; border-bottom:1px solid var(--theme-border); font-size:0.85em;">
                 <strong>${s.username}</strong> from ${s.ip_address || 'N/A'}<br>
                 <span class="text-muted">Expires: ${s.expires_at}</span>
                 ${s.is_current ? ' <span class="badge badge-cis">Current</span>' : ''}
