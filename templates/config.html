@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}LLM Configuration — ECS Security Assessment{% endblock %}
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">LLM Configuration</h1>
+    <div style="background: var(--bg-card, #0A0A0A); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 12px; padding: 1.5rem; max-width: 600px;">
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; color: var(--text-secondary, #A1A1AA); font-size: 0.85rem; margin-bottom: 0.5rem;">API Key</label>
+            <input type="text" value="{{ llm_config.api_key or '' }}" placeholder="Enter API key" style="width: 100%; padding: 0.6rem 0.8rem; background: var(--bg-elevated, #0F0F0F); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 8px; color: var(--text-primary, #EDEDEF); box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; color: var(--text-secondary, #A1A1AA); font-size: 0.85rem; margin-bottom: 0.5rem;">Base URL</label>
+            <input type="text" value="{{ llm_config.base_url or '' }}" style="width: 100%; padding: 0.6rem 0.8rem; background: var(--bg-elevated, #0F0F0F); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 8px; color: var(--text-primary, #EDEDEF); box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; color: var(--text-secondary, #A1A1AA); font-size: 0.85rem; margin-bottom: 0.5rem;">Model</label>
+            <select style="width: 100%; padding: 0.6rem 0.8rem; background: var(--bg-elevated, #0F0F0F); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 8px; color: var(--text-primary, #EDEDEF); box-sizing: border-box;">
+                {% for model in available_models %}
+                <option value="{{ model }}" {% if llm_config.model == model %}selected{% endif %}>{{ model }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; color: var(--text-secondary, #A1A1AA); font-size: 0.85rem; margin-bottom: 0.5rem;">Temperature: {{ llm_config.temperature }}</label>
+            <input type="range" min="0" max="1" step="0.1" value="{{ llm_config.temperature }}" style="width: 100%;">
+        </div>
+    </div>
+</div>
+{% endblock %}

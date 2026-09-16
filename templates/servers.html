@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Servers — ECS Security Assessment{% endblock %}
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">Server Management</h1>
+    <div style="background: var(--bg-card, #0A0A0A); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+        <h3 style="color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">Add Server</h3>
+        <p style="color: var(--text-secondary, #A1A1AA);">{% if keypair_exists %}SSH keypair is configured.{% else %}Please configure an SSH keypair first.{% endif %}</p>
+    </div>
+    <div style="background: var(--bg-card, #0A0A0A); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 12px; padding: 1.5rem;">
+        <h3 style="color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">Server List ({{ servers|length }})</h3>
+        {% if servers %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for server in servers %}
+            <div style="background: var(--bg-elevated, #0F0F0F); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: var(--text-primary, #EDEDEF); font-weight: 600;">{{ server.hostname }}</span>
+                    <span style="color: var(--text-secondary, #A1A1AA); margin-left: 0.5rem;">({{ server.ip_address }})</span>
+                </div>
+                <span style="color: var(--text-secondary, #A1A1AA); font-size: 0.85rem;">{{ server.os_type }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary, #A1A1AA);">No servers configured.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

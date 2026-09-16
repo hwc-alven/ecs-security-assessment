@@ -218,10 +218,12 @@ class AuditLog:
 class AuthService:
     """Authentication service with session management."""
 
-    def __init__(self, audit: AuditLog):
+    def __init__(self, audit: AuditLog, users_file: Optional[Path] = None, codes_file: Optional[Path] = None):
         self.audit = audit
         self._sessions: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
+        self._users_file = users_file
+        self._codes_file = codes_file
 
         # Load admin credentials
         self.admin_username = os.environ.get("ADMIN_USERNAME", DEFAULT_ADMIN_USERNAME)

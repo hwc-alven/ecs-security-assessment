@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Reports — ECS Security Assessment{% endblock %}
+{% block content %}
+<div style="padding: 2rem 0;">
+    <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">Assessment Reports</h1>
+    <div style="background: var(--bg-card, #0A0A0A); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 12px; padding: 1.5rem;">
+        <h3 style="color: var(--text-primary, #EDEDEF); margin-bottom: 1rem;">Task Reports ({{ tasks|length }})</h3>
+        {% if tasks %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for task in tasks %}
+            <div style="background: var(--bg-elevated, #0F0F0F); border: 1px solid var(--border-primary, rgba(255,255,255,0.1)); border-radius: 8px; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-primary, #EDEDEF); font-weight: 600;">Task {{ task.id if task.id else loop.index }}</span>
+                    <span style="color: var(--text-secondary, #A1A1AA); font-size: 0.85rem;">{{ task.status if task.status else 'unknown' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary, #A1A1AA);">No assessment tasks found. Run an assessment to generate reports.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -78,8 +78,7 @@ async def login_page(request: Request):
     user = get_current_user(request)
     if user:
         return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse("login.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "login.html", {
         "error": None,
     })
 
@@ -140,8 +139,7 @@ async def audit_log_page(request: Request, user: str = Depends(require_auth)):
     """Render the audit log page."""
     audit = get_audit_log()
     stats = audit.get_stats()
-    return templates.TemplateResponse("audit_log.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "audit_log.html", {
         "username": user,
         "event_types": EVENT_TYPES,
         "stats": stats,
